@@ -200,7 +200,7 @@
 
                     <div class="col-lg-12">
                       <div class="form-group">
-                        <button type="submit" class="default-btn btn send_btn"> Submit <span></span></button>
+                        <button type="submit" class="default-btn btn send_btn" name="submit" id="submit"> Submit <span></span></button>
                       </div>
                     </div>
                   </div>
@@ -263,7 +263,7 @@
 
             </div>
             <div class="col-lg-3 ">
-              <div style="padding-top:100px;" >
+              <div style="padding-top:100px;">
                 <p style="font-weight:bold; font-size: 24px;">Wellnez Studiio In Collaboration With Rising Phoenix</p></br>
 
                 <p style=" font-size: 21px;">Address :Office No. 1409,</br>
@@ -307,7 +307,7 @@
 
     }
 
-    document.getElementById('myform').addEventListener('submit', validateForm);
+    document.getElementById('contactForm').addEventListener('submit', validateFirstNameForm);
 
 
     function validateLastName(input_str) {
@@ -329,7 +329,7 @@
 
     }
 
-    document.getElementById('myform').addEventListener('submit', validateForm);
+    document.getElementById('contactForm').addEventListener('submit', validateLastNameForm);
 
     function validateEmail(input_str) {
       var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -349,7 +349,7 @@
 
     }
 
-    document.getElementById('myform').addEventListener('submit', validateForm);
+    document.getElementById('contactForm').addEventListener('submit', validateEmailForm);
 
 
     function validatePhoneNumber(input_str) {
@@ -370,7 +370,7 @@
 
     }
 
-    document.getElementById('myform').addEventListener('submit', validateForm);
+    document.getElementById('contactForm').addEventListener('submit', validatePhoneForm);
 
     function updateCharacterCount() {
       var textarea = document.getElementById("messageInput");
@@ -383,42 +383,187 @@
 
 
 
+
+
+
+
+
   <?php
-  if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $servername = "localhost";
-    $username = "root";
-    $password = "";
-    $dbname = "sheelaa";
+  // require('config.php');
+  require 'PHPMailer-master/src/PHPMailer.php';
+  require 'PHPMailer-master/src/SMTP.php';
+  require 'PHPMailer-master/src/Exception.php';
 
-    // Create connection
-    $conn = new mysqli($servername, $username, $password, $dbname);
+  use PHPMailer\PHPMailer\PHPMailer;
+  use PHPMailer\PHPMailer\SMTP;
+  use PHPMailer\PHPMailer\Exception;
 
-    // Check connection
-    if ($conn->connect_error) {
-      die("Connection failed: " . $conn->connect_error);
-    }
+  // Declare the variables as global
+  global  $first_name, $last_name, $email, $phone, $message, $to, $from, $body, $subject, $website_name, $website_url;
+  global $Message;
 
-    // Get form data
+  // Define $mail_admin and $mail_user as global variables
+  global $mail_admin, $mail_user;
+
+  // Create $mail_admin and $mail_user objects
+  $mail_admin = new PHPMailer(true);
+  $mail_user = new PHPMailer(true);
+
+
+
+
+  if (isset($_POST['submit'])) {
     $first_name = $_POST['first_name'];
     $last_name = $_POST['last_name'];
     $email = $_POST['email'];
     $phone = $_POST['phone'];
     $message = $_POST['message'];
 
-    // Insert data into database
-    $sql = "INSERT INTO contacts (first_name, last_name, email, phone, message) VALUES ('$first_name','$last_name','$email', '$phone', '$message')";
 
-    if ($conn->query($sql) === TRUE) {
-      echo "Data inserted successfully!";
+    // $sql = "INSERT INTO contacts (first_name, last_name, email, phone, message) VALUES ('$first_name', '$last_name', '$email', '$phone', '$message')";
+    // echo "<script>alert('" . $sql . "');</script>";
+    $query = mysqli_query($con, "insert into contacts(first_name,last_name,email,phone,message) values('$first_name', '$last_name','$email','$phone','$message')");
+
+
+    if ($query) {
+
+      // $mail_user = new PHPMailer(true);
+
+      try {
+        // SMTP Configuration for Gmail
+        $mail_user->isSMTP();
+        $mail_user->Host = 'smtp.titan.email';
+        $mail_user->Port = 465;
+        $mail_user->SMTPAuth = true;
+        $mail_user->SMTPSecure = 'ssl';
+        $mail_user->Username = 'bhagath.koduri@iiiqbets.com';
+        $mail_user->Password = 'Bhagath@123$';
+
+        // Email Content
+        $website_name = "sheelaa";
+        $website_url = "https://iiiqbets.com/iiiqbets_E_commerce";
+
+
+        // Your email sending code here
+        $to = $email;
+        $from = "bhagath.koduri@iiiqbets.com";
+        $headers = "MIME-Version: 1.0" . "\r\n";
+        $headers .= "From: sheelaa <" . $from . ">" . "\r\n";
+        $headers .= "Content-type: text/html; charset=utf-8" . "\r\n";
+
+
+        $subject  = "Thank you for contacting us at $website_name - $website_url";
+        $body = "<html>";
+        $body .= "<head></head>";
+        $body .= "<body>";
+        $body = "<p>Dear $first_name $last_name,\n\n</p>";
+        $body .= "<p>Thank you for contacting us on $website_name . We are glad to have you as a member of our community. Our team is here to serve you and provide assistance whenever needed.\n\n</p>";
+
+        $body .= "<p>Your contact Details for $website_name : \n\n</p>";
+        $body .= "<table style='border-collapse: collapse;'>";
+        $body .= "<tr><td style='padding: 5px; border: 1px solid black;'>User Name:</td><td style='padding: 5px; border: 1px solid black;'>$first_name</td></tr>";
+        $body .= "<tr><td style='padding: 5px; border: 1px solid black;'>User Name:</td><td style='padding: 5px; border: 1px solid black;'>$last_name</td></tr>";
+        $body .= "<tr><td style='padding: 5px; border: 1px solid black;'>Contact No:</td><td style='padding: 5px; border: 1px solid black;'>$phone</td></tr>";
+        $body .= "<tr><td style='padding: 5px; border: 1px solid black;'>Email:</td><td style='padding: 5px; border: 1px solid black;'>$email</td></tr>";
+        $body .= "<tr><td style='padding: 5px; border: 1px solid black;'>Message:</td><td style='padding: 5px; border: 1px solid black;'>$message</td></tr>";
+        $body .= "</table>";
+
+
+        //$body .= "Please login using the  link: \n\n";
+        // $body .= '<p>Please <a href="https://iiiqbets.com/iiiqbets_E_commerce/login.php">click here</a> to login.</p>';
+
+        // $body .= "https://iiiqbets.com/iiiqbets_E_commerce/login.php\n\n";
+
+        $body .= "<p>If you have any questions or need any help, please feel free to contact us. We look forward to providing you with a great experience on $website_name($website_url).\n\n</p>";
+        $body .= "<p>Best regards,\n</p>";
+        $body .= "<p>The $website_name Team</p>";
+        $body .= "</body>";
+        $body .= "</html>";
+
+
+        // Sender and recipient details
+        $mail_user->setFrom('bhagath.koduri@iiiqbets.com', 'sheelaa');
+        $mail_user->addAddress($to, $name);
+
+        // Email content
+        $mail_user->isHTML(true);
+        $mail_user->Subject = $subject;
+        $mail_user->Body = $body;
+
+
+        // Send the email
+        if ($mail_user->send()) {
+
+          // Create a new $mail_admin variable for sending email to admin
+          //$mail_admin = new PHPMailer(true);
+
+          $mail_admin->isSMTP();
+          $mail_admin->Host = 'smtp.titan.email';
+          $mail_admin->Port = 465;
+          $mail_admin->SMTPAuth = true;
+          $mail_admin->SMTPSecure = 'ssl';
+          $mail_admin->Username = 'bhagath.koduri@iiiqbets.com';
+          $mail_admin->Password = 'Bhagath@123$';
+
+
+          $subject  = "User Contacted succesfully - $website_name";
+          //   $body .= "Dear Admin:\n\n";
+          //     $body .= "New User Registered Details for $website_name : \n\n";
+          //     $body = "User Name: $name,\n\n";
+          //     $body .= "Contact No: $contactno \n";
+          //     $body .= "Email: $email\n\n";
+          //     $body .= "Best regards,\n";
+          //   $body .= "The $website_name Team";
+          $body = "<html>";
+          $body .= "<head></head>";
+          $body .= "<body>";
+          $body .= "<p>Dear Admin,</p>";
+          $body .= "<p>User contact Details for $website_name:</p>";
+          $body .= "<table style='border-collapse: collapse;'>";
+          $body .= "<tr><td style='padding: 5px; border: 1px solid black;'>User Name:</td><td style='padding: 5px; border: 1px solid black;'>$first_name</td></tr>";
+          $body .= "<tr><td style='padding: 5px; border: 1px solid black;'>Sur Name:</td><td style='padding: 5px; border: 1px solid black;'>$last_name</td></tr>";
+          $body .= "<tr><td style='padding: 5px; border: 1px solid black;'>Contact No:</td><td style='padding: 5px; border: 1px solid black;'>$phone</td></tr>";
+          $body .= "<tr><td style='padding: 5px; border: 1px solid black;'>Email:</td><td style='padding: 5px; border: 1px solid black;'>$email</td></tr>";
+          $body .= "<tr><td style='padding: 5px; border: 1px solid black;'>Message:</td><td style='padding: 5px; border: 1px solid black;'>$message</td></tr>";
+          $body .= "</table>";
+          $body .= "<p>Best regards,<br>The $website_name Team</p>";
+          $body .= "</body>";
+          $body .= "</html>";
+
+
+
+          // Sender and recipient details
+          $mail_admin->setFrom('bhagath.koduri@iiiqbets.com', 'sheelaa');
+          $mail_admin->addAddress("manjuprasad@iiiqbets.com", 'Admin');
+          //$mail_user->addAddress("ssy.balu@gmail.com", Admin);
+
+          // Email content
+          $mail_admin->isHTML(true);
+          $mail_admin->Subject = $subject;
+          $mail_admin->Body = $body;
+
+          if ($mail_admin->send()) {
+
+            echo "<script>alert('You are successfully contact for sheelaa');</script>";
+            echo "<script type='text/javascript'> document.location ='login.php'; </script>";
+          }
+        } else {
+          echo "<script>alert('Email sending failed: " . $mail_user->ErrorInfo . "');</script>";
+          echo "<script type='text/javascript'> document.location ='signup.php'; </script>";
+        }
+      } catch (Exception $e) {
+        echo "<script>alert('Email sending failed: " . $mail_user->ErrorInfo . "');</script>";
+        echo "<script type='text/javascript'> document.location ='signup.php'; </script>";
+      }
     } else {
-      echo "Error: " . $sql . "<br>" . $conn->error;
+      echo "<script>alert('Email id already registered with another accout. Please try  with another email id.');</script>";
+      echo "<script type='text/javascript'> document.location ='signup.php'; </script>";
     }
-
-    // Close connection
-    $conn->close();
   }
-  ?>
 
+
+
+  ?>
 
 </body>
 

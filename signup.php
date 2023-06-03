@@ -21,7 +21,7 @@ if(isset($_SESSION['USER_LOGIN']) && $_SESSION['USER_LOGIN']=='yes'){
 }
 
 
-// Declare the variables as global
+ // Declare the variables as global
 global  $name, $email, $contactno, $password,$to,$from,$body,$subject,$website_name,$website_url;
 global $Message;
 
